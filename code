@@ -1,0 +1,61 @@
+import random
+from collections import defaultdict
+
+def read_names(‪C:\Users\samry\Downloads\names.txt):
+    try:
+        with open(‪C:\Users\samry\Downloads\names.txt, 'r') as file:
+            names = [name.strip() for name in file.readlines()]
+        return names
+    except FileNotFoundError:
+        print("Ошибка: Файл не найден.")
+        return []
+
+def build_bigram_model(names):
+    bigram_model = defaultdict(int)
+    total_count = 0
+    
+    for name in names:
+        name = '^' + name + '$'  # добавляем символы начала и конца слова
+        for i in range(len(name) - 1):
+            bigram = name[i:i+2]
+            bigram_model[bigram] += 1
+            total_count += 1
+    
+    for bigram in bigram_model:
+        bigram_model[bigram] /= total_count  # вычисляем вероятность биграммы
+    
+    return bigram_model
+
+def generate_name(bigram_model):
+    name = ''
+    current_bigram = random.choice(list(bigram_model.keys()))
+    
+    while current_bigram[-1] != '$':
+        name += current_bigram[1]
+        candidates = [bigram[1] for bigram in bigram_model if bigram[0] == current_bigram[1]]
+        next_letter = random.choice(candidates)
+        current_bigram = current_bigram[1] + next_letter
+    
+    return name
+
+def print_bigram_probabilities(bigram_model):
+    print("Таблица вероятностей биграмм:")
+    for bigram, probability in bigram_model.items():
+        print(f"{bigram}: {probability}")
+
+# Чтение данных из файла
+names = read_names("names.txt")
+
+# Если список имен пуст, прекращаем выполнение программы
+if not names:
+    exit()
+
+# Построение модели биграмм
+bigram_model = build_bigram_model(names)
+
+# Генерация нового имени
+new_name = generate_name(bigram_model)
+print("Сгенерированное имя:", new_name)
+
+# Вывод таблицы вероятностей биграмм
+print_bigram_probabilities(bigram_model)
